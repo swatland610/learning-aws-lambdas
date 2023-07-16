@@ -1,0 +1,19 @@
+version: 0.3
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.10
+    commands:
+      - echo "Installing dependencies..."
+      - pip install -r requirements.txt
+
+  build:
+    commands:
+      - echo "Running unit tests..."
+      - python -m unittest discover tests/
+
+artifacts:
+  files:
+    - '**/*'
+  discard-paths: yes
