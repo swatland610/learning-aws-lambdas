@@ -1,4 +1,6 @@
 import requests
+import os
+import json
 import pandas as pd
 import snowflake.connector
 
@@ -11,49 +13,60 @@ def lambda_handler(event=None, context=None):
         # Make API request to fetch data
         response = requests.get(api_url)
         data = response.json()
-        df = pd.DataFrame(data)
+
+        ### subset the data for testing
+        test_data = data[0:10]
         
         # Connect to Snowflake
-        #connection = snowflake.connector.connect(
-        #account="snowflake_account",
-        #user="snowflake_user",
-        #password="snowflake_password",
-        #warehouse="snowflake_warehouse",
-        #database="snowflake_database"
-        #)
-        #cursor = connection.cursor()
+        connection = snowflake.connector.connect(
+        account=os.getenv('SNOWFLAKE_DEMO_ACCOUNT'),
+        user=os.getenv('SNOWFLAKE_DEMO_USER'),
+        password=os.getenv('SNOWFLAKE_DEMO_PASSWORD'),
+        warehouse='COMPUTE_WH',
+        database='RAW',
+        schema='PUBLIC'
+        )
+        print('connected to snowflake!')
+        cursor = connection.cursor()
 
-        # create table if not exists
-        #cursor.execute("""
-        # CREATE TABLE IF NOT EXISTS chicago_budgets (
-        #   fund_type VARCHAR,
-        #   fund_code VARCHAR,
-        #   fund_description VARCHAR,
-        #   department_number VARCHAR,
-        #   department_description VARCHAR,
-        #   appropriation_authority VARCHAR,
-        #   appropriation_authority_description VARCHAR,
-        #   appropriation_account VARCHAR,
-        #   appropriation_account_description VARCHAR, 
-        #   ordinance_amount VARCHAR
-        # )""")
+        # set up table name
+        table_name = 'chicago_budgets'
+        try: 
+            # create table if not exists
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS {} (
+            fund_type VARCHAR,
+            fund_code VARCHAR,
+            fund_description VARCHAR,
+            department_number VARCHAR,
+            department_description VARCHAR,
+            appropriation_authority VARCHAR,
+            appropriation_authority_description VARCHAR,
+            appropriation_account VARCHAR,
+            appropriation_account_description VARCHAR, 
+            ordinance_amount VARCHAR
+            )""".format(table_name))
         
-        # Insert data into Snowflake table
-        #df.to_sql(
-        #    name='chicago_budgets',
-        #    con=connection, 
-        #    if_exists='replace',
-        #    index=False,
-        #    chunksize=10000)
-        
-        #connection.commit()
-        #cursor.close()
-        #connection.close()
+            for item in test_data: 
+                # Insert data into Snowflake table
+                columns = ', '.join(item.keys())
+                columns = columns.replace('_ordinance_amount_', 'ordinance_amount')
+                placeholders = ', '.join(['%s'] * len(item))
+                insert_sql = "INSERT INTO {} ({}) VALUES ({})".format(table_name, columns, placeholders)
 
-        print(df.head())
-        print("num of rows: ", len(data))
-        print("list of keys: ",  data[0].keys())
+                cursor.execute(insert_sql, tuple(item.values()))
+            connection.commit()
+            print("Bulk insert completed successfully!")
+
+            # close connections
+            cursor.close()
+            connection.close()    
+            print('Data written')
+        except Exception as e:
+            connection.rollback()
+            print(f"Error occurred during bulk insert: {str(e)}")
         
+
         return {
             'statusCode': 200,
             'body': 'Data written to Snowflake successfully.'
