@@ -3,7 +3,7 @@ import os
 import snowflake.connector
 
 
-def lambda_handler(event=None, context=None):
+def lambda_handler(event, context):
     # api endpoint to collect data
     api_url = "https://data.cityofchicago.org/resource/xbjh-7zvh.json"
 
@@ -76,4 +76,4 @@ def lambda_handler(event=None, context=None):
         }
 ### UNCOMMENT TO RUN CODE LOCALLY
 #if __name__ == '__main__':
-#   lambda_handler()
+#   lambda_handler(None, None)
