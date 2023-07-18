@@ -1,11 +1,11 @@
 version: 0.2
 
-  build:
-    commands:
-      - echo "Building application..."
-      - echo "Zipping functions..."
-      # add new functions to zip below
-      - zip -r lambda_1.zip lambda-project-1
+build:
+  commands:
+    - echo "Building application..."
+    - echo "Zipping functions..."
+    # add new functions to zip below
+    - zip -r lambda_1.zip lambda-project-1
 
 artifacts:
   files:
