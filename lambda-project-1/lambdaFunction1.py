@@ -3,7 +3,7 @@ import os
 import snowflake.connector
 
 
-def chicagoBudgetUpload(event, context):
+def lambdaFunction1(event, context):
     # api endpoint to collect data
     api_url = "https://data.cityofchicago.org/resource/xbjh-7zvh.json"
 
@@ -76,4 +76,4 @@ def chicagoBudgetUpload(event, context):
         }
 ### UNCOMMENT TO RUN CODE LOCALLY
 #if __name__ == '__main__':
-#   lambda_handler(None, None)
+#   lambdaFunction1(None, None)
