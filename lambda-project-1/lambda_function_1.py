@@ -1,7 +1,5 @@
 import requests
 import os
-import json
-import pandas as pd
 import snowflake.connector
 
 
@@ -76,6 +74,6 @@ def lambda_handler(event=None, context=None):
             'statusCode': 500,
             'body': 'Error: ' + str(e)
         }
-    
-if __name__ == '__main__':
-    lambda_handler()
+### UNCOMMENT TO RUN CODE LOCALLY
+#if __name__ == '__main__':
+#   lambda_handler()
